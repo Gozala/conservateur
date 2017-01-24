@@ -1,0 +1,1 @@
+<a src="javascript:var script=document.createElement('script');script.src='https://gist.githubusercontent.com/Gozala/58cc14aeae44bf57636108ce9fdd2d31/raw/e0fb524e5914744d06b441369454c7363cfedc14/content-pinning.js';document.documentElement.appendChild(script);">bookmarklet</a>
