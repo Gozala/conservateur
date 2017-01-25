@@ -161,7 +161,7 @@ subscribtions.onmouseover = ({target}) => {
   return { type: "MouseOver", width, height, top: top + scrollTop, left: left + scrollLeft }
 }
 
-subscribtions.onmouseout = (event) => {
+subscribtions.onmouseout = ({target}) => {
   const {width, height, top, left} = target.getBoundingClientRect()
   const {scrollTop, scrollLeft} = target.ownerDocument.body
   return { type: "MouseOut", width, height, top: top + scrollTop, left: left + scrollLeft }
