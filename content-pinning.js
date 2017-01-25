@@ -157,14 +157,14 @@ subscribtions.onkeyup = (event) => {
 
 subscribtions.onmouseover = ({target}) => {
   const {width, height, top, left} = target.getBoundingClientRect()
-  const {scrollTop, scrollLeft} = target.ownerDocument.documentElement
+  const {scrollTop, scrollLeft} = target.ownerDocument.body
   return { type: "MouseOver", width, height, top: top + scrollTop, left: left + scrollLeft }
 }
 
 subscribtions.onmouseout = (event) => {
-  const {width, height} = window.getComputedStyle(event.target)
-  const {offsetTop, offsetLeft} = event.target
-  return { type: "MouseOut", width, height, offsetTop, offsetLeft }
+  const {width, height, top, left} = target.getBoundingClientRect()
+  const {scrollTop, scrollLeft} = target.ownerDocument.body
+  return { type: "MouseOut", width, height, top: top + scrollTop, left: left + scrollLeft }
 }
 
 subscribtions.handleEvent = (event) => {
