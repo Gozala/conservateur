@@ -1,6 +1,4 @@
-{
-  
-class Model {
+ class Model {
   constructor(isShiftPressed=false, target=null) {
     this.isShiftPressed = isShiftPressed
     this.target = target
@@ -44,9 +42,9 @@ const update = (message, state) => {
     case 'ReleaseShift':
       return releaseShift(state)
     case 'MouseOver':
-      return hover(state, message)
+      return hover(state, message.rect)
     case 'MouseOut':
-      return hout(state, message.target)
+      return hout(state, message.rect)
     default:
       return report(state, `Unknown message: ${JSON.stringify(message)}`)
   }
@@ -100,7 +98,7 @@ const draw = (state) => {
 }
 
 
-const hover = (state, payload) => state.merge({target: payload})
+const hover = (state, payload) => state.merge({target: rect})
 const hout = (state, payload) => state
 const pressShift = state => state.merge({isShiftPressed: true})
 const releaseShift = state => state.merge({isShiftPressed: false})
@@ -127,12 +125,27 @@ program = new class {
     console.error('Unhandled error occured', error)
   }
 }
-  
-}
 
   
 
 isShiftKey = event => event.key === 'Shift' || event.keyIdentifier === 'Shift' || event.keyCode === 16
+
+class Rect {
+  constructor(width, height, top, left) {
+    this.width = width
+    this.height = height
+    this.top = top
+    this.left = left
+  }
+}
+
+const readTargetRect = element => {
+  const {width, height, top, left} = target.getBoundingClientRect()
+  return new Rect(width,
+                  height,
+                  top + target.ownerDocument.scrollTop + target.ownerDocument.body.scrollTop,
+                  left + target.ownerDocument.scrollLeft + target.ownerDocument.body.scrollLeft)
+}
 
 if (window.subscribtions == null) {
   window.subscribtions = {}
@@ -156,15 +169,11 @@ subscribtions.onkeyup = (event) => {
 
 
 subscribtions.onmouseover = ({target}) => {
-  const {width, height, top, left} = target.getBoundingClientRect()
-  const {scrollTop, scrollLeft} = target.ownerDocument.body
-  return { type: "MouseOver", width, height, top: top + scrollTop, left: left + scrollLeft }
+  return { type: "MouseOver", rect: readTargetRect(target) }
 }
 
 subscribtions.onmouseout = ({target}) => {
-  const {width, height, top, left} = target.getBoundingClientRect()
-  const {scrollTop, scrollLeft} = target.ownerDocument.body
-  return { type: "MouseOut", width, height, top: top + scrollTop, left: left + scrollLeft }
+  return { type: "MouseOut", rect: readTargetRect(target) }
 }
 
 subscribtions.handleEvent = (event) => {
