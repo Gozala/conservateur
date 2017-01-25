@@ -98,8 +98,8 @@ const draw = (state) => {
 }
 
 
-const hover = (state, payload) => state.merge({target: rect})
-const hout = (state, payload) => state
+const hover = (state, rect) => state.merge({target: rect})
+const hout = (state, rect) => state
 const pressShift = state => state.merge({isShiftPressed: true})
 const releaseShift = state => state.merge({isShiftPressed: false})
 
