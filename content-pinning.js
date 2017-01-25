@@ -132,7 +132,7 @@ program = new class {
 
   
 
-isShiftKey = event => event.key === 'Shift'
+isShiftKey = event => event.key === 'Shift' || event.keyIdentifier === 'Shift' || event.keyCode === 16
 
 if (window.subscribtions == null) {
   window.subscribtions = {}
