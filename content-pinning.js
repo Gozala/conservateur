@@ -140,7 +140,7 @@ class Rect {
 }
 
 const readTargetRect = element => {
-  const {width, height, top, left} = target.getBoundingClientRect()
+  const {width, height, top, left} = element.getBoundingClientRect()
   return new Rect(width,
                   height,
                   top + target.ownerDocument.scrollTop + target.ownerDocument.body.scrollTop,
