@@ -1,4 +1,4 @@
- class Model {
+class Model {
   constructor(isShiftPressed=false, target=null) {
     this.isShiftPressed = isShiftPressed
     this.target = target
@@ -18,7 +18,7 @@
     return instance
   }
   transact(process) {
-    if (this.tasks.length > 0) {
+   if (this.tasks.length > 0) {
       this.tasks.forEach(task => new Promise(task).then(process.send, process.report))
       const instance = this.clone()
       instance.tasks = []
@@ -85,7 +85,7 @@ const draw = (state) => {
   const marker =
     document.querySelector(':root > .marker-scene > .marker') ||
     drawMarker(scene)
-  
+ 
   if (state.isShiftPressed && state.target) {
     marker.style.height = `${state.target.height}px`
     marker.style.width = `${state.target.width}px`
@@ -104,7 +104,7 @@ const pressShift = state => state.merge({isShiftPressed: true})
 const releaseShift = state => state.merge({isShiftPressed: false})
 
 
-program = new class {
+class Program {
   constructor() {
     this.state = init().transact(this)
   }
@@ -115,7 +115,7 @@ program = new class {
     } catch (error) {
       this.report(error)
     }
-    
+   
     if (before !== this.state) {
       draw(this.state)
       console.log(this.state)
@@ -126,9 +126,12 @@ program = new class {
   }
 }
 
-  
+const program = new Program()
 
-isShiftKey = event => event.key === 'Shift' || event.keyIdentifier === 'Shift' || event.keyCode === 16
+const isShiftKey = event =>
+  event.key === 'Shift' ||
+  event.keyIdentifier === 'Shift' ||
+  event.keyCode === 16
 
 class Rect {
   constructor(width, height, top, left) {
@@ -144,49 +147,50 @@ const readTargetRect = element => {
   const {body, documentElement} = ownerDocument
   const {width, height, top, left} = element.getBoundingClientRect()
   return new Rect(width,
-                  height,
-                  top + documentElement.scrollTop + body.scrollTop,
-                  left + documentElement.scrollLeft + body.scrollLeft)
-}
-
-if (window.subscribtions == null) {
-  window.subscribtions = {}
-}
-
-subscribtions.onkeydown = (event) => {
-  if (isShiftKey(event)) {
-    return {type: "PressShift"}
-  } else {
-    return {type: "NoOp"}
-  }
-}
-
-subscribtions.onkeyup = (event) => {
-  if (isShiftKey(event)) {
-    return {type: "ReleaseShift"}
-  } else {
-    return {type: "NoOp"}
-  }
+                 height,
+                 top + documentElement.scrollTop + body.scrollTop,
+                 left + documentElement.scrollLeft + body.scrollLeft)
 }
 
 
-subscribtions.onmouseover = ({target}) => {
-  return { type: "MouseOver", rect: readTargetRect(target) }
+if (window.decoders == null) {
+  window.decoders = {}
 }
 
-subscribtions.onmouseout = ({target}) => {
-  return { type: "MouseOut", rect: readTargetRect(target) }
+decoders.keydown = (event) => {
+ if (isShiftKey(event)) {
+   return {type: "PressShift"}
+ } else {
+   return {type: "NoOp"}
+ }
 }
 
-subscribtions.handleEvent = (event) => {
-  const decoder = subscribtions[`on${event.type}`]
+decoders.keyup = (event) => {
+ if (isShiftKey(event)) {
+   return {type: "ReleaseShift"}
+ } else {
+   return {type: "NoOp"}
+ }
+}
+
+
+decoders.mouseover = ({target}) => {
+ return { type: "MouseOver", rect: readTargetRect(target) }
+}
+
+decoders.mouseout = ({target}) => {
+ return { type: "MouseOut", rect: readTargetRect(target) }
+}
+
+decoders.handleEvent = (event) => {
+  const decoder = decoders[event.type]
   if (decoder) {
     program.send(decoder(event))
   }
 }
 
-document.addEventListener('keydown', subscribtions, false)
-document.addEventListener('keyup', subscribtions, false)
-document.addEventListener('mouseover', subscribtions, false)
-document.addEventListener('mouseout', subscribtions, false)
+document.addEventListener('keydown', decoders, false)
+document.addEventListener('keyup', decoders, false)
+document.addEventListener('mouseover', decoders, false)
+document.addEventListener('mouseout', decoders, false)
 
