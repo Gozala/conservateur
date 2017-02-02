@@ -1,7 +1,8 @@
 class Model {
-  constructor(isShiftPressed=false, target=null) {
+  constructor(isShiftPressed=false, marker=null, selection=null) {
     this.isShiftPressed = isShiftPressed
-    this.target = target
+    this.marker = marker
+    this.selection = selection
     this.tasks = []
   }
   clone() {
@@ -45,37 +46,89 @@ const update = (message, state) => {
       return hover(state, message.rect)
     case 'MouseOut':
       return hout(state, message.rect)
+    case 'Click':
+      return click(state)
     default:
       return report(state, `Unknown message: ${JSON.stringify(message)}`)
   }
 }
 
-const drawScene = (root) => {
-  const scene = document.createElement('article')
-  scene.style.position = 'absolute'
-  scene.style.pointerEvents = 'none'
-  scene.style.top = 0
-  scene.style.left = 0
-  scene.style.width = '100%'
-  scene.style.height = '100%'
-  scene.style.zIndex = 99999
-  scene.className = 'marker-scene'
+const drawScene = (target) => {
+  const element = target.ownerDocument.createElement('article')
+  element.style.position = 'absolute'
+  element.style.pointerEvents = 'none'
+  element.style.top = 0
+  element.style.left = 0
+  element.style.width = '100%'
+  element.style.height = '100%'
+  element.style.zIndex = 99998
+  element.className = 'marker-scene'
 
-  root.appendChild(scene)
-  return scene
+  target.appendChild(element)
+  return element
 }
 
-const drawMarker = (scene) => {
-  const marker = document.createElement('section')
-  marker.style.position = 'absolute'
-  marker.style.pointerEvents = 'none'
-  marker.style.backgroundColor = 'yellow'
-  marker.style.opacity = 0.5
-  marker.style.display = 'none'
-  marker.className = 'marker'
-  marker.style.ponterEvents = 'none'
-  scene.appendChild(marker)
-  return marker
+const drawMarker = (target) => {
+  const element = target.ownerDocument.createElement('section')
+  element.style.position = 'absolute'
+  element.style.pointerEvents = 'none'
+  element.style.backgroundColor = 'yellow'
+  element.style.opacity = 0.5
+  element.style.display = 'none'
+  element.className = 'marker'
+  element.style.ponterEvents = 'none'
+  target.appendChild(element)
+  return element
+}
+
+const drawStateDebugger = (target) => {
+  const element = target.ownerDocument.createElement('pre')
+  element.style.position = 'fixed'
+  element.style.pointerEvents = 'none'
+  element.style.top = 0
+  element.style.left = 0
+  element.style.zIndex = 99999
+  element.className = 'state-debugger'
+  element.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
+  element.style.color = 'white'
+
+  target.appendChild(element)
+  return element
+}
+
+
+const renderSelection = (document, state) => {
+  if (state != null) {
+    const selection = document.getSelection()
+    const {documentElement, body} = document
+    const left = state.left + state.offsetLeft - (documentElement.scrollLeft + body.scrollLeft)
+    const top = state.top + state.offsetTop - (documentElement.scrollTop + body.scrollTop)
+    const node = document.elementFromPoint(left, top)
+    
+    if (node != null) {
+      const range = document.createRange()
+      try {
+          range.selectNode(node)
+          selection.addRange(range)
+      } catch (error) {
+        console.error(node, error)
+      }
+    }
+  }
+}
+
+const renderStateDebugger = (output, state) => {
+  output.textContent = JSON.stringify(state, 2, 2)
+}
+
+const renderMarker = (element, marker, isVisible) => {
+  element.style.height = `${marker.height}px`
+  element.style.width = `${marker.width}px`
+  element.style.top = `${marker.top + marker.offsetTop}px`
+  element.style.left = `${marker.left + marker.offsetLeft}px`
+  element.style.display = isVisible
+   ? 'block'
+   : 'none'
 }
 
 const draw = (state) => {
@@ -85,24 +138,24 @@ const draw = (state) => {
   const marker =
     document.querySelector(':root > .marker-scene > .marker') ||
     drawMarker(scene)
+  const stateDebugger =
+    document.querySelector(':root > .state-debugger') ||
+    drawStateDebugger(document.documentElement)
  
-  if (state.isShiftPressed && state.target) {
-    marker.style.height = `${state.target.height}px`
-    marker.style.width = `${state.target.width}px`
-    marker.style.top = `${state.target.top}px`
-    marker.style.left = `${state.target.left}px`
-    marker.style.display = 'block'
-  } else {
-    marker.style.display = 'none'
-  }
+  renderMarker(marker, state.marker, state.isShiftPressed)
+  renderStateDebugger(stateDebugger, state)
+  renderSelection(document, state.selection)
 }
 
 
-const hover = (state, rect) => state.merge({target: rect})
+const hover = (state, rect) => state.merge({marker: rect})
 const hout = (state, rect) => state
 const pressShift = state => state.merge({isShiftPressed: true})
 const releaseShift = state => state.merge({isShiftPressed: false})
-
+const click = state =>
+  state.isShiftPressed
+  ? state.merge({selection: state.marker})
+  : state
 
 class Program {
   constructor() {
@@ -129,16 +182,18 @@ class Program {
 const program = new Program()
 
 const isShiftKey = event =>
-  event.key === 'Shift' ||
-  event.keyIdentifier === 'Shift' ||
+  event.key === 'Meta' ||
+  event.keyIdentifier === 'Meta' ||
   event.keyCode === 16
 
 class Rect {
-  constructor(width, height, top, left) {
+  constructor(width, height, top, left, offsetTop, offsetLeft) {
     this.width = width
     this.height = height
     this.top = top
     this.left = left
+    this.offsetTop = offsetTop
+    this.offsetLeft = offsetLeft
   }
 }
 
@@ -148,8 +203,10 @@ const readTargetRect = element => {
   const {width, height, top, left} = element.getBoundingClientRect()
   return new Rect(width,
                  height,
-                 top + documentElement.scrollTop + body.scrollTop,
-                 left + documentElement.scrollLeft + body.scrollLeft)
+                 top,
+                 left,
+                 documentElement.scrollTop + body.scrollTop,
+                 documentElement.scrollLeft + body.scrollLeft)
 }
 
 
@@ -182,6 +239,10 @@ decoders.mouseout = ({target}) => {
  return { type: "MouseOut", rect: readTargetRect(target) }
 }
 
+decoders.mouseup = _ => {
+  return { type: "Click" }
+}
+
 decoders.handleEvent = (event) => {
   const decoder = decoders[event.type]
   if (decoder) {
@@ -189,8 +250,9 @@ decoders.handleEvent = (event) => {
   }
 }
 
-document.addEventListener('keydown', decoders, false)
-document.addEventListener('keyup', decoders, false)
-document.addEventListener('mouseover', decoders, false)
-document.addEventListener('mouseout', decoders, false)
 
+document.onkeydown = decoders.handleEvent
+document.onkeyup = decoders.handleEvent
+document.onmouseover = decoders.handleEvent
+document.onmouseout = decoders.handleEvent
+document.onmouseup = decoders.handleEvent
