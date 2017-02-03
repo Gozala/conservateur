@@ -108,8 +108,9 @@ const renderSelection = (document, state) => {
     if (node != null) {
       const range = document.createRange()
       try {
-          range.selectNode(node)
-          selection.addRange(range)
+        selection.removeAllRanges()
+        range.selectNode(node)
+        selection.addRange(range)
       } catch (error) {
         console.error(node, error)
       }
@@ -184,7 +185,7 @@ const program = new Program()
 const isShiftKey = event =>
   event.key === 'Meta' ||
   event.keyIdentifier === 'Meta' ||
-  event.keyCode === 16
+  event.keyCode === 224
 
 class Rect {
   constructor(width, height, top, left, offsetTop, offsetLeft) {
@@ -215,6 +216,7 @@ if (window.decoders == null) {
 }
 
 decoders.keydown = (event) => {
+  console.log(event)
  if (isShiftKey(event)) {
    return {type: "PressShift"}
  } else {
