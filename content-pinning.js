@@ -7,7 +7,7 @@ class Model {
   }
   clone () {
     const instance = new this.constructor()
-    Object.keys(this).forEach(key => instance[key] = this[key])
+    Object.keys(this).forEach(key => (instance[key] = this[key]))
     return instance
   }
   merge (changes) {
@@ -210,6 +210,7 @@ const readTargetRect = element => {
 if (window.decoders == null) {
   window.decoders = {}
 }
+var decoders = window.decoders
 
 decoders.keydown = (event) => {
   console.log(event)

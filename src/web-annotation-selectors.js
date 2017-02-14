@@ -124,8 +124,8 @@ const getCursorPositionSelector = (to:Node, offset:Integer, from:Node):Selector 
 
 const createRangeSelector = (root:Element|Document, commonAncestor:?Element, startContainer:Node, endContainer:Node, startOffset:Integer, endOffset:Integer) => {
   const anchor = commonAncestor == null
-  	? root
-  	: commonAncestor
+    ? root
+    : commonAncestor
 
   const startSelector =
     getCursorPositionSelector(startContainer, startOffset, anchor)
@@ -136,13 +136,13 @@ const createRangeSelector = (root:Element|Document, commonAncestor:?Element, sta
 
   if (anchor !== root && commonAncestor != null) {
     const commonAncestorSelector = selectorOf(commonAncestor, root)
-	                                                                                return new CSSSelector(commonAncestorSelector, rangeSelector)
+    return new CSSSelector(commonAncestorSelector, rangeSelector)
   } else {
     return rangeSelector
   }
 }
 
-const toElement =
+export const toElement =
  (node:Node):?Element => {
    const element = node.nodeType === Node.ELEMENT_NODE /* ::&& node instanceof Element*/
      ? node
@@ -150,7 +150,7 @@ const toElement =
    return element
  }
 
-const toText =
+export const toText =
   (node:Node):?Text => {
     const text = node.nodeType === Node.TEXT_NODE /* ::&& node instanceof Text*/
       ? node
@@ -158,15 +158,15 @@ const toText =
     return text
   }
 
-const getRangeSelector = (range:Range):Selector => {
+export const getRangeSelector = (range:Range):Selector => {
   const {
-    collapsed, commonAncestorContainer,
+    commonAncestorContainer,
     startContainer, startOffset,
     endContainer, endOffset
   } = range
 
   const root = commonAncestorContainer.ownerDocument.documentElement ||
-        	   commonAncestorContainer.ownerDocument
+                commonAncestorContainer.ownerDocument
   switch (commonAncestorContainer.nodeType) {
     case TEXT_NODE: {
       const selector =
@@ -206,7 +206,7 @@ const getRangeSelector = (range:Range):Selector => {
 class Break <state> {
   value:state
   constructor (value:state) {
-  	                                        this.value = value
+    this.value = value
   }
 }
 
@@ -219,9 +219,9 @@ type Reducer <state, item> =
 
 const reduceTextNodes = <state>
   (reducer:Reducer<state, Text>, root:Element, seed:state):state => {
-  	let element:Element = root
+  let element:Element = root
   let result:state = seed
-	                                        let instruction = result
+  let instruction = result
   let stack:Array<number> = []
   let index = 0
   while (true) {
@@ -234,7 +234,6 @@ const reduceTextNodes = <state>
       index = index + 1
 
       if (nodeType === Node.TEXT_NODE/* :: && child instanceof Text*/) {
-        status = 1
         instruction = reducer(result, child)
         if (instruction instanceof Break) {
           return instruction.value
@@ -247,7 +246,6 @@ const reduceTextNodes = <state>
         stack.push(index)
         element = child
         index = 0
-        status = 2
         break
       }
     }
@@ -274,8 +272,6 @@ type Anchor = {
   offset:number
 }
 
-type Anchors = Map<number, Anchor>
-
 const getAnchorsByOffsets =
   (node:Element, offsets:Array<number>):Map<number, Anchor> =>
   reduceTextNodes((state, text) => {
@@ -299,7 +295,7 @@ const getAnchorsByOffsets =
         return state
       }
     }
-  }, node, {map: new Map, offsets: offsets.sort(), position: 0}).map
+  }, node, {map: new Map(), offsets: offsets.sort(), position: 0}).map
 
 const getAnchorByOffset =
  (node:Element, offset:number):Anchor|null =>
@@ -342,7 +338,7 @@ type SelectionRange =
   | RefinedCssSelector<SelectionRange>
 
 const resolveMarkerSelector = (selector:MarkerSelector, target:Element):Anchor|Error => {
-  while (true) {
+  while (selector) {
     switch (selector.type) {
       case 'TextPositionSelector': {
         const anchor = getAnchorByOffset(target, selector.start)
@@ -392,9 +388,9 @@ const resloveRange = (startSelector:MarkerSelector, endSelector:MarkerSelector, 
   }
 }
 
-const resolveRangeSelector =
+export const resolveRangeSelector =
   (selector:SelectionRange, target:Element):Range|Error => {
-    while (true) {
+    while (selector) {
       switch (selector.type) {
         case 'CssSelector': {
           const commonAncestor = target.querySelector(selector.value)
