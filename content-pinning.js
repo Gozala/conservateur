@@ -1,25 +1,25 @@
 class Model {
-  constructor(isShiftPressed=false, marker=null, selection=null) {
+  constructor (isShiftPressed=false, marker=null, selection=null) {
     this.isShiftPressed = isShiftPressed
     this.marker = marker
     this.selection = selection
     this.tasks = []
   }
-  clone() {
+  clone () {
     const instance = new this.constructor()
     Object.keys(this).forEach(key => instance[key] = this[key])
     return instance
   }
-  merge(changes) {
+  merge (changes) {
     return Object.assign(this.clone(), changes)
   }
-  fx(task) {
+  fx (task) {
     const instance = this.clone()
     instance.tasks = [...this.tasks, task]
     return instance
   }
-  transact(process) {
-   if (this.tasks.length > 0) {
+  transact (process) {
+    if (this.tasks.length > 0) {
       this.tasks.forEach(task => new Promise(task).then(process.send, process.report))
       const instance = this.clone()
       instance.tasks = []
@@ -32,7 +32,6 @@ class Model {
 const init = () => new Model()
 
 const report = (model, error) => model.fx((succeed, fail) => console.error(error))
-
 
 const update = (message, state) => {
   switch (message.type) {
@@ -96,7 +95,6 @@ const drawStateDebugger = (target) => {
   return element
 }
 
-
 const renderSelection = (document, state) => {
   if (state != null) {
     const selection = document.getSelection()
@@ -104,7 +102,7 @@ const renderSelection = (document, state) => {
     const left = state.left + state.offsetLeft - (documentElement.scrollLeft + body.scrollLeft)
     const top = state.top + state.offsetTop - (documentElement.scrollTop + body.scrollTop)
     const node = document.elementFromPoint(left, top)
-    
+
     if (node != null) {
       const range = document.createRange()
       try {
@@ -142,12 +140,11 @@ const draw = (state) => {
   const stateDebugger =
     document.querySelector(':root > .state-debugger') ||
     drawStateDebugger(document.documentElement)
- 
+
   renderMarker(marker, state.marker, state.isShiftPressed)
   renderStateDebugger(stateDebugger, state)
   renderSelection(document, state.selection)
 }
-
 
 const hover = (state, rect) => state.merge({marker: rect})
 const hout = (state, rect) => state
@@ -159,23 +156,23 @@ const click = state =>
   : state
 
 class Program {
-  constructor() {
+  constructor () {
     this.state = init().transact(this)
   }
-  send(message) {
+  send (message) {
     const before = this.state
     try {
       this.state = update(message, this.state).transact(this)
     } catch (error) {
       this.report(error)
     }
-   
+
     if (before !== this.state) {
       draw(this.state)
       console.log(this.state)
     }
   }
-  report(error) {
+  report (error) {
     console.error('Unhandled error occured', error)
   }
 }
@@ -188,7 +185,7 @@ const isShiftKey = event =>
   event.keyCode === 224
 
 class Rect {
-  constructor(width, height, top, left, offsetTop, offsetLeft) {
+  constructor (width, height, top, left, offsetTop, offsetLeft) {
     this.width = width
     this.height = height
     this.top = top
@@ -210,39 +207,37 @@ const readTargetRect = element => {
                  documentElement.scrollLeft + body.scrollLeft)
 }
 
-
 if (window.decoders == null) {
   window.decoders = {}
 }
 
 decoders.keydown = (event) => {
   console.log(event)
- if (isShiftKey(event)) {
-   return {type: "PressShift"}
- } else {
-   return {type: "NoOp"}
- }
+  if (isShiftKey(event)) {
+    return {type: 'PressShift'}
+  } else {
+    return {type: 'NoOp'}
+  }
 }
 
 decoders.keyup = (event) => {
- if (isShiftKey(event)) {
-   return {type: "ReleaseShift"}
- } else {
-   return {type: "NoOp"}
- }
+  if (isShiftKey(event)) {
+    return {type: 'ReleaseShift'}
+  } else {
+    return {type: 'NoOp'}
+  }
 }
 
-
 decoders.mouseover = ({target}) => {
- return { type: "MouseOver", rect: readTargetRect(target) }
+  return { type: 'MouseOver', rect: readTargetRect(target) }
 }
 
 decoders.mouseout = ({target}) => {
- return { type: "MouseOut", rect: readTargetRect(target) }
+  return { type: 'MouseOut', rect: readTargetRect(target) }
 }
 
 decoders.mouseup = _ => {
-  return { type: "Click" }
+  return { type: 'Click' }
 }
 
 decoders.handleEvent = (event) => {
@@ -251,7 +246,6 @@ decoders.handleEvent = (event) => {
     program.send(decoder(event))
   }
 }
-
 
 document.onkeydown = decoders.handleEvent
 document.onkeyup = decoders.handleEvent

@@ -24,7 +24,7 @@ export type Selector =
   & Refinement
   | { type:"CssSelector", value:StringEncodedCSSSelector }
   | { type:"XPathSelector", value:XPath }
-  | { type:"TextQuoteSelector",exact:string, prefix:string, suffix:string }
+  | { type:"TextQuoteSelector", exact:string, prefix:string, suffix:string }
   | { type:"TextPositionSelector", start:Integer, end:Integer }
   | { type:"DataPositionSelector", start:Integer, end:Integer }
   | { type:"SvgSelector", value:SerializedSVG }
@@ -34,7 +34,7 @@ export type Selector =
 const ELEMENT_NODE = 1
 const TEXT_NODE = 3
 
-type Indexed  <item> = {
+type Indexed <item> = {
   length:number,
   [index:number]: item
 }
@@ -54,9 +54,9 @@ const indexOfChild = <item> (child:item, children:Indexed<item>):number => {
 
 const selectorOf = (to:Element, from:Element|Document|null=null):string => {
   let target = to
-  let selector = ""
+  let selector = ''
   while (from !== target && target != null && target.nodeType === ELEMENT_NODE) {
-    if (target.id !== "" && target.id != null) {
+    if (target.id !== '' && target.id != null) {
       selector = `> #${target.id} ${selector}`
       break
     }
@@ -75,11 +75,11 @@ const selectorOf = (to:Element, from:Element|Document|null=null):string => {
 }
 
 class RangeSelector {
-  type = "RangeSelector"
+  type = 'RangeSelector'
   startSelector:Selector
   endSelector:Selector
   refinedBy:?Selector
-  constructor(start:Selector, end:Selector, refinedBy?:Selector) {
+  constructor (start:Selector, end:Selector, refinedBy?:Selector) {
     this.startSelector = start
     this.endSelector = end
     this.refinedBy = refinedBy
@@ -87,22 +87,21 @@ class RangeSelector {
 }
 
 class CSSSelector {
-  type:"CssSelector" = "CssSelector"
+  type:"CssSelector" = 'CssSelector'
   value:StringEncodedCSSSelector
   refinedBy:?Selector
-  constructor(value:StringEncodedCSSSelector, refinedBy?:Selector) {
+  constructor (value:StringEncodedCSSSelector, refinedBy?:Selector) {
     this.value = value
     this.refinedBy = refinedBy
   }
 }
 
-
 class TextPositionSelector {
-  type:"TextPositionSelector" = "TextPositionSelector"
+  type:"TextPositionSelector" = 'TextPositionSelector'
   start:Integer
   end:Integer
   refinedBy:?Selector
-  constructor(start:Integer, end:Integer, refinedBy?:Selector) {
+  constructor (start:Integer, end:Integer, refinedBy?:Selector) {
     this.start = start
     this.end = end
     this.refinedBy = refinedBy
@@ -110,7 +109,7 @@ class TextPositionSelector {
 }
 
 class CursorPositionSelector extends TextPositionSelector {
-  constructor(offset:Integer) {
+  constructor (offset:Integer) {
     super(offset, offset)
   }
 }
@@ -127,17 +126,17 @@ const createRangeSelector = (root:Element|Document, commonAncestor:?Element, sta
   const anchor = commonAncestor == null
   	? root
   	: commonAncestor
-  
+
   const startSelector =
     getCursorPositionSelector(startContainer, startOffset, anchor)
   const endSelector =
     getCursorPositionSelector(endContainer, endOffset, anchor)
 
   const rangeSelector = new RangeSelector(startSelector, endSelector)
-  
+
   if (anchor !== root && commonAncestor != null) {
     const commonAncestorSelector = selectorOf(commonAncestor, root)
-	return new CSSSelector(commonAncestorSelector, rangeSelector)
+	                                                                                return new CSSSelector(commonAncestorSelector, rangeSelector)
   } else {
     return rangeSelector
   }
@@ -145,7 +144,7 @@ const createRangeSelector = (root:Element|Document, commonAncestor:?Element, sta
 
 const toElement =
  (node:Node):?Element => {
-   const element = node.nodeType === Node.ELEMENT_NODE /*::&& node instanceof Element*/
+   const element = node.nodeType === Node.ELEMENT_NODE /* ::&& node instanceof Element*/
      ? node
      : null
    return element
@@ -153,7 +152,7 @@ const toElement =
 
 const toText =
   (node:Node):?Text => {
-    const text = node.nodeType === Node.TEXT_NODE /*::&& node instanceof Text*/
+    const text = node.nodeType === Node.TEXT_NODE /* ::&& node instanceof Text*/
       ? node
       : null
     return text
@@ -170,7 +169,7 @@ const getRangeSelector = (range:Range):Selector => {
         	   commonAncestorContainer.ownerDocument
   switch (commonAncestorContainer.nodeType) {
     case TEXT_NODE: {
-      const selector = 
+      const selector =
         createRangeSelector(root,
                             commonAncestorContainer.parentElement,
                             startContainer,
@@ -180,7 +179,7 @@ const getRangeSelector = (range:Range):Selector => {
       return selector
     }
     case ELEMENT_NODE: {
-      const selector = 
+      const selector =
         createRangeSelector(root,
                             toElement(commonAncestorContainer),
                             startContainer,
@@ -190,7 +189,7 @@ const getRangeSelector = (range:Range):Selector => {
       return selector
     }
     default: {
-      const selector = 
+      const selector =
         createRangeSelector(root,
                             null,
                             startContainer,
@@ -202,14 +201,12 @@ const getRangeSelector = (range:Range):Selector => {
   }
 }
 
-
-
 /* @flow */
 
 class Break <state> {
   value:state
-  constructor(value:state) {
-  	this.value = value
+  constructor (value:state) {
+  	                                        this.value = value
   }
 }
 
@@ -223,56 +220,55 @@ type Reducer <state, item> =
 const reduceTextNodes = <state>
   (reducer:Reducer<state, Text>, root:Element, seed:state):state => {
   	let element:Element = root
-    let result:state = seed
-	let instruction = result
-    let stack:Array<number> = []
-    let index = 0
-    while (true) {
-      const {childNodes} = element
-      const {length} = childNodes
-      let nodeType = Node.TEXT_NODE
-      while (index < length) {
-        const child = childNodes[index]
-        nodeType = child.nodeType
-        index = index + 1
+  let result:state = seed
+	                                        let instruction = result
+  let stack:Array<number> = []
+  let index = 0
+  while (true) {
+    const {childNodes} = element
+    const {length} = childNodes
+    let nodeType = Node.TEXT_NODE
+    while (index < length) {
+      const child = childNodes[index]
+      nodeType = child.nodeType
+      index = index + 1
 
-        if (nodeType === Node.TEXT_NODE/*:: && child instanceof Text*/) {
-          status = 1
-          instruction = reducer(result, child)
-          if (instruction instanceof Break) {
-            return instruction.value
-          } else {
-            result = instruction
-          }
-        }
-
-        if (nodeType === Node.ELEMENT_NODE/*:: && child instanceof Element*/) {
-          stack.push(index)
-          element = child
-          index = 0
-          status = 2
-          break
+      if (nodeType === Node.TEXT_NODE/* :: && child instanceof Text*/) {
+        status = 1
+        instruction = reducer(result, child)
+        if (instruction instanceof Break) {
+          return instruction.value
+        } else {
+          result = instruction
         }
       }
-      
+
+      if (nodeType === Node.ELEMENT_NODE/* :: && child instanceof Element*/) {
+        stack.push(index)
+        element = child
+        index = 0
+        status = 2
+        break
+      }
+    }
+
       // If loop exited because element node was reach or
       // if loop exited because element had no children
       // resume traversal from the stack.
-      if (nodeType === Node.TEXT_NODE || length === 0) {
-        const {parentElement} = element
-        if (parentElement != null && stack.length > 0) {
-          element = parentElement
-          index = stack.pop()
-        } else {
-          break
-        }
+    if (nodeType === Node.TEXT_NODE || length === 0) {
+      const {parentElement} = element
+      if (parentElement != null && stack.length > 0) {
+        element = parentElement
+        index = stack.pop()
+      } else {
+        break
       }
     }
-    
-    return result
   }
 
-        
+  return result
+}
+
 type Anchor = {
   node:Node,
   offset:number
@@ -290,7 +286,7 @@ const getAnchorsByOffsets =
       const position = state.position + text.length
       if (position > offset) {
         state.offsets.shift()
-        state.map.set(offset, {node:text, offset:offset - state.position})
+        state.map.set(offset, {node: text, offset: offset - state.position})
         state.position = position
 
         if (state.offsets.length > 0) {
@@ -303,21 +299,21 @@ const getAnchorsByOffsets =
         return state
       }
     }
-  }, node, {map:new Map, offsets:offsets.sort(), position:0}).map
+  }, node, {map: new Map, offsets: offsets.sort(), position: 0}).map
 
 const getAnchorByOffset =
  (node:Element, offset:number):Anchor|null =>
- reduceTextNodes((state:{position:number,anchor:Anchor|null}, text) => {
+ reduceTextNodes((state:{position:number, anchor:Anchor|null}, text) => {
    const position = state.position + text.length
    if (position > offset) {
-     state.anchor = {node:text, offset:offset - state.position}
+     state.anchor = {node: text, offset: offset - state.position}
      return new Break(state)
    } else {
      state.position = position
      return state
    }
- }, node, {position:0, anchor:null}).anchor
-        
+ }, node, {position: 0, anchor: null}).anchor
+
 type RefinedCssSelector <selector> = {
   type:"CssSelector",
   value:string,
@@ -329,7 +325,6 @@ type RangedSelector <start, end> = {
   startSelector:start,
   endSelector:end
 }
-
 
 type TextPosition = {
   type:"TextPositionSelector",
@@ -349,7 +344,7 @@ type SelectionRange =
 const resolveMarkerSelector = (selector:MarkerSelector, target:Element):Anchor|Error => {
   while (true) {
     switch (selector.type) {
-      case "TextPositionSelector": {
+      case 'TextPositionSelector': {
         const anchor = getAnchorByOffset(target, selector.start)
         if (anchor != null) {
           return anchor
@@ -357,7 +352,7 @@ const resolveMarkerSelector = (selector:MarkerSelector, target:Element):Anchor|E
           return new Error(`No text node found matching ${selector.start} offset`)
         }
       }
-      case "CssSelector": {
+      case 'CssSelector': {
         const {refinedBy, value} = selector
         const node = target.querySelector(value)
         if (node != null) {
@@ -368,11 +363,11 @@ const resolveMarkerSelector = (selector:MarkerSelector, target:Element):Anchor|E
           return new Error(`No element found matching ${value} query`)
         }
       }
-    } 
+    }
   }
   return new Error(`Unsupported ${selector.type} selector`)
 }
-        
+
 const createRange = (startContainer:Node, startOffset:number, endContainer:Node, endOffset:number):Range|Error => {
   try {
     const range = document.createRange()
@@ -401,14 +396,14 @@ const resolveRangeSelector =
   (selector:SelectionRange, target:Element):Range|Error => {
     while (true) {
       switch (selector.type) {
-        case "CssSelector": {
+        case 'CssSelector': {
           const commonAncestor = target.querySelector(selector.value)
           if (commonAncestor == null) {
             return new Error(`Node node matching ${selector.value} is found`)
           } else {
             const refinement = selector.refinedBy
             switch (refinement.type) {
-              case "TextPositionSelector": {
+              case 'TextPositionSelector': {
                 const {start, end} = refinement
                 const anchors =
                       getAnchorsByOffsets(commonAncestor, [start, end])
@@ -425,11 +420,11 @@ const resolveRangeSelector =
                                       endAnchor.offset)
                 }
               }
-              case "RangeSelector": {
+              case 'RangeSelector': {
                 const {startSelector, endSelector} = refinement
                 return resloveRange(startSelector, endSelector, commonAncestor)
               }
-              case "CssSelector":
+              case 'CssSelector':
                 selector = refinement
                 target = commonAncestor
                 continue
@@ -437,12 +432,11 @@ const resolveRangeSelector =
             return Error(`Unsupported ${refinement.type} selector`)
           }
         }
-        case "RangeSelector": {
+        case 'RangeSelector': {
           const {startSelector, endSelector} = selector
           return resloveRange(startSelector, endSelector, target)
         }
+      }
     }
-	
+    return new Error(`Unsupported ${selector.type} selector`)
   }
-  return new Error(`Unsupported ${selector.type} selector`)
-}
