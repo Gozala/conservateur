@@ -31,7 +31,7 @@
     "//build:types": "flow gen-flow-files src --out-dir lib",
     "build:types": "flow-copy-source src lib",
     "build:node": "babel --out-dir lib src",
-    "build:browser": "browserify --require ./src/index:reflex --debug --transform babelify --outfile dist/reflex.js",
+    "build:browser": "browserify --entry ./src/main --debug --transform babelify --outfile dist/conservateur.js",
     "build": "npm run build:node && npm run build:types",
     "prepublish": "npm run build && npm test"
   },
